@@ -14,41 +14,6 @@ const {
 var multipart = require("connect-multiparty");
 var multipartMiddleware = multipart();
 
-/**
- * @swagger
- * components:
- *   schemas:
- *     Book:
- *       type: object
- *       required:
- *         - title
- *         - author
- *         - finished
- *       properties:
- *         id:
- *           type: string
- *           description: The auto-generated id of the book
- *         title:
- *           type: string
- *           description: The title of your book
- *         author:
- *           type: string
- *           description: The book author
- *         finished:
- *           type: boolean
- *           description: Whether you have finished reading the book
- *         createdAt:
- *           type: string
- *           format: date
- *           description: The date the book was added
- *       example:
- *         id: d5fE_asz
- *         title: The New Turing Omnibus
- *         author: Alexander K. Dewdney
- *         finished: false
- *         createdAt: 2020-03-10T04:05:06.157Z
- */
-
 /* Api 1 - Get all cleaning plans */
 
 /**
@@ -133,7 +98,9 @@ local storage(/home/images/maps) and the rest to the database  */
  * @swagger
  * /createNewCleaningPlan:
  *   post:
- *     summary: Upload an image and create new cleaning plan
+ *     tags:
+ *        - Api 4 - Create new cleaning plan
+ *     summary: api working but have not figured out how to upload on swagger
  *     consumes:
  *       - multipart/form-data
  *     parameters:
@@ -178,6 +145,46 @@ router.post("/updateCleaningPlan", async (req, res) => {});
 
 router.post("/updateZoneObj", async (req, res) => {});
 /* Api 7 - Create cleaning plan command object in database (according to number 5) */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     deletePlanAndMapObj:
+ *       type: object
+ *       required:
+ *         - id
+ *       properties:
+ *         id:
+ *            type: string
+ *            description: "plan123D"
+ */
+
+/**
+ * @swagger
+ * /deletePlanAndMapObj:
+ *   delete:
+ *     tags:
+ *        - Api 8 - Delete plan and map object by id
+ *     summary:
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/deletePlanAndMapObj'
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: "plan123D"
+ */
 
 /* Api 8 - Delete cleaning plan, map object */
 router.delete("/deletePlanAndMapObj", (req, res) => {
