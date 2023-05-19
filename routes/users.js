@@ -203,7 +203,7 @@ router.patch("/updateCleaningPlan", async (req, res) => {});
 /**
  * @swagger
  * /updateZoneObj:
- *   post:
+ *   put:
  *     tags:
  *        - Api 6 - update cleaning zone object by id
  *     summary:
