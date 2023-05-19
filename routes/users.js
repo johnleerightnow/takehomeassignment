@@ -12,6 +12,7 @@ const {
   createNewCleaningPlan,
   updateZoneObjById,
   createCleaningPlanCommand,
+  updateCleaningPlan,
 } = require("../Utility/utility.js");
 var multipart = require("connect-multiparty");
 var multipartMiddleware = multipart();
@@ -183,10 +184,48 @@ router.post("/createNewCleaningPlan", multipartMiddleware, async (req, res) => {
   res.json("cleaning plan created and image saved");
 });
 
+/**
+ * @swagger
+ * paths:
+ *  /updateCleaningPlan:
+ *    put:
+ *      tags:
+ *        - Api 5 - update cleaning plan with image
+ *      consumes:
+ *        - multipart/form-data
+ *      parameters:
+ *        - name: file
+ *          in: formdata
+ *          type: file
+ */
+
 /* Api 5 - update cleaning plan to the database - if the map image is edited, 
 it will be overwritten with the new one */
 
-router.patch("/updateCleaningPlan", async (req, res) => {});
+router.put("/updateCleaningPlan", multipartMiddleware, async (req, res) => {
+  const planid = req.body;
+
+  // Get the uploaded file
+  const file = req.files["file\n"];
+  // Specify the destination path to save the file
+  const filename = file.name;
+  const filePath = `${currentDirectory}/home/images/maps/` + filename;
+
+  // Move the file to the destination path
+  fs.rename(file.path, filePath, (err) => {
+    if (err) {
+      console.error("Error saving file:", err);
+      // Handle the error appropriately
+      return;
+    }
+
+    console.log("File saved successfully.");
+  });
+
+  updateCleaningPlan(planid);
+
+  res.status(200).send("Cleaning plan updated");
+});
 
 /* Api 6 - update cleaning zone object */
 

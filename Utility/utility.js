@@ -168,6 +168,35 @@ async function createNewCleaningPlan(cleaningObj) {
   }
 }
 
+async function updateCleaningPlan(obj) {
+  const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CLUSTER}.mongodb.net/test?retryWrites=true&w=majority`;
+  const client = new MongoClient(uri);
+  console.log("obj.params", obj.params);
+  try {
+    await client.connect();
+    const database = client.db("thassignment");
+    const CPcollection = database.collection("Cleaning Plan");
+    const results = await CPcollection.findOne(obj.params.id);
+    //delete previous file
+    const oldFilePath =
+      currentDirectory + results.map.path + "/" + results.map.name;
+
+    fs.unlink(oldFilePath, (err) => {
+      if (err) {
+        console.error("Error deleting file:", err);
+      } else {
+        console.log("File deleted successfully.");
+      }
+    });
+    //update file
+    await CPcollection.updateOne({ id: obj.params.id }, { $set: obj });
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await client.close();
+  }
+}
+
 async function createCleaningPlanCommand(sourceObj) {
   const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CLUSTER}.mongodb.net/test?retryWrites=true&w=majority`;
   const client = new MongoClient(uri);
@@ -243,4 +272,5 @@ module.exports = {
   createNewCleaningPlan,
   updateZoneObjById,
   createCleaningPlanCommand,
+  updateCleaningPlan,
 };
