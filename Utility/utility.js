@@ -117,39 +117,23 @@ async function getCleaningPlanById(cleaningMapId) {
   }
 }
 
-async function getFavCleanObjCond(cleaningMapId) {
+async function getFavCleanObjCond(params) {
   const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CLUSTER}.mongodb.net/test?retryWrites=true&w=majority`;
   const client = new MongoClient(uri);
 
   try {
     await client.connect();
     const database = client.db("thassignment");
-    const CPCcollection = database.collection("Cleaning Plan Command");
-    // const CPcollection = database.collection("Cleaning Plan");
+    const CPcollection = database.collection("Cleaning Plan");
 
-    const results = await CPCcollection.aggregate([
-      {
-        $match: {
-          id: cleaningMapId,
-        },
-      },
-      {
-        $lookup: {
-          from: "Cleaning Plan",
-          localField: "id",
-          foreignField: "cleaningMapId",
-          as: "cleaning_favorite",
-        },
-      },
-      {
-        $unwind: "$cleaning_favorite",
-      },
-      {
-        $match: {
-          "cleaning_favorite.default": true,
-        },
-      },
-    ]).toArray();
+    const results = await CPcollection.find({
+      default: params.default,
+      "map.clean_zones.cleaning_round": params.cleaning_round,
+      "map.clean_zones.cleaning_preset.centre_brush.type":
+        params.centre_brush_type,
+    }).toArray();
+
+    console.log(results);
 
     return results;
   } catch (err) {
@@ -184,10 +168,79 @@ async function createNewCleaningPlan(cleaningObj) {
   }
 }
 
+async function createCleaningPlanCommand(sourceObj) {
+  const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CLUSTER}.mongodb.net/test?retryWrites=true&w=majority`;
+  const client = new MongoClient(uri);
+
+  const { cleaning_favorite, ...cpcObj } = Object.values(sourceObj)[0];
+  console.log(cpcObj);
+
+  try {
+    await client.connect();
+    const database = client.db("thassignment");
+    const CPCcollection = database.collection("Cleaning Plan Command");
+    await CPCcollection.insertOne(cpcObj);
+    const starttime =
+      new Date().toLocaleDateString() + " : " + new Date().toLocaleTimeString();
+    const logtext = cleaning_favorite.map((obj) => {
+      return {
+        name: obj.name,
+        order: obj.map.clean_zones.sort((a, b) => a.order - b.order),
+        parameters: obj.map.clean_zones.map(
+          (ele) =>
+            ele.name +
+            " = Vacuum Speed " +
+            ele.cleaning_preset.vacuum.speed +
+            ", Centre Brush Type " +
+            ele.cleaning_preset.centre_brush.type
+        ),
+        skippedzones: obj.map.no_go_zones.map((ele) => ele.position),
+        startingtime: starttime,
+      };
+    });
+    fs.writeFile(
+      `${currentDirectory}/home/images/logs/${new Date()}-log.txt`,
+      JSON.stringify(logtext),
+      (err) => {
+        if (err) throw err;
+      }
+    );
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await client.close();
+  }
+}
+
+async function updateZoneObjById(cleanzoneObj) {
+  const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CLUSTER}.mongodb.net/test?retryWrites=true&w=majority`;
+  const client = new MongoClient(uri);
+
+  try {
+    await client.connect();
+    const database = client.db("thassignment");
+    const CPcollection = database.collection("Cleaning Plan");
+    const results = await CPcollection.findOne({
+      "map.clean_zones.id": cleanzoneObj.id,
+    });
+    await CPcollection.updateOne(
+      { "map.clean_zones.id": cleanzoneObj.id },
+      { $set: { "map.clean_zones": cleanzoneObj } }
+    );
+    console.log(results);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    await client.close();
+  }
+}
+
 module.exports = {
   getCollectionResults,
   deletePlanAndMapObj,
   getCleaningPlanById,
   getFavCleanObjCond,
   createNewCleaningPlan,
+  updateZoneObjById,
+  createCleaningPlanCommand,
 };
