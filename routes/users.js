@@ -55,7 +55,7 @@ router.get("/allCleaningPlans", async (req, res) => {
 /**
  * @swagger
  * /cleaningPlanById:
- *   post:
+ *   get:
  *     tags:
  *        - Api 2 - Get cleaning plans by id
  *     summary:
@@ -78,7 +78,7 @@ router.get("/allCleaningPlans", async (req, res) => {
  *                   example: "plan123A"
  */
 
-router.post("/cleaningPlanById", async (req, res) => {
+router.get("/cleaningPlanById", async (req, res) => {
   if (typeof req.body.id !== "string") {
     res.status(400).json("Type is not string");
   }
@@ -104,7 +104,7 @@ router.post("/cleaningPlanById", async (req, res) => {
 /**
  * @swagger
  * /getFavCleanObjCond:
- *   post:
+ *   get:
  *     tags:
  *        - Api 3 - Get favourite cleaning object with condition
  *     summary:
@@ -131,7 +131,7 @@ router.post("/cleaningPlanById", async (req, res) => {
 get the cleaning favorite object in which "default":"false", "cleaning_round":2, 
 "centre_bursh":{ "type" : "normal"}*/
 
-router.post("/getFavCleanObjCond", async (req, res) => {
+router.get("/getFavCleanObjCond", async (req, res) => {
   const params = req.body.params;
   const results = await getFavCleanObjCond(params);
   res.status(200).send(results);
@@ -203,7 +203,7 @@ router.patch("/updateCleaningPlan", async (req, res) => {});
 /**
  * @swagger
  * /updateZoneObj:
- *   put:
+ *   patch:
  *     tags:
  *        - Api 6 - update cleaning zone object by id
  *     summary:
@@ -224,7 +224,7 @@ router.patch("/updateCleaningPlan", async (req, res) => {});
  *               example: ""
  */
 
-router.put("/updateZoneObj", async (req, res) => {
+router.patch("/updateZoneObj", async (req, res) => {
   const zoneObj = req.body;
   updateZoneObjById(zoneObj);
   res.status(200).send("Zone Obj updated");
